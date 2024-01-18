@@ -17,11 +17,13 @@ class MainViewModel @Inject constructor(
 
     var counter: Long = 0L
 
-    var currentFavoriteMapObject:MutableLiveData<DataMapObject?> = MutableLiveData<DataMapObject?>(null)
+    var currentFavoriteMapObject: MutableLiveData<DataMapObject?> =
+        MutableLiveData<DataMapObject?>(null)
 
-    var allFavoriteMapObject: MutableLiveData<List<DataMapObject>> = MutableLiveData<List<DataMapObject>>()
+    var allFavoriteMapObject: MutableLiveData<List<DataMapObject>> =
+        MutableLiveData<List<DataMapObject>>()
 
-    var flagShowAll:MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
+    var flagShowAll: MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
 
 
     init {
@@ -44,7 +46,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun removeMapObject(id:Long) {
+    fun removeMapObject(id: Long) {
         viewModelScope.launch {
             repository.removeMapObject(id)
         }
@@ -61,9 +63,11 @@ class MainViewModel @Inject constructor(
         }
 
         allFavoriteMapObject.value = allFavoriteMapObject.value?.let {
-            it.onEach { mapObject ->
-                if (mapObject.id==dataMapObject.id) {
-                    mapObject.description=newDescription
+            it.map { mapObject ->
+                if (mapObject.id == dataMapObject.id) {
+                    mapObject.copy(description = newDescription)
+                } else {
+                    mapObject
                 }
             }
         }
@@ -72,10 +76,11 @@ class MainViewModel @Inject constructor(
 
     fun goToPoint(dataMapObject: DataMapObject) {
         currentFavoriteMapObject.value = DataMapObject(
-            id=dataMapObject.id,
+            id = dataMapObject.id,
             longitude = dataMapObject.longitude,
             latitude = dataMapObject.latitude,
-        description= dataMapObject.description)
+            description = dataMapObject.description
+        )
     }
 
     fun removeAll() {
