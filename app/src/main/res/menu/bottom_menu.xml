@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
-        android:id="@+id/buttonMap"
+        android:id="@+id/mapsFragment"
         android:title="Карта"
         android:icon="@drawable/baseline_map_24"
         android:orderInCategory="1"/>
     <item
-        android:id="@+id/buttonFavorite"
+        android:id="@+id/favoriteFragment"
         android:title="Избранное"
         android:icon="@drawable/baseline_favorite_24"
         android:orderInCategory="2"

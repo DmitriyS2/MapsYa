@@ -53,6 +53,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/buttonPlus" />
 
+    <ImageButton
+        android:id="@+id/location"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center"
+        android:layout_marginEnd="12dp"
+        android:elevation="1dp"
+        android:scaleType="center"
+        android:src="@drawable/baseline_my_location_24"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/buttonPlus" />
+
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/textInputLayoutB"
         android:layout_width="0dp"

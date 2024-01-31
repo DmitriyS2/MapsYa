@@ -1,5 +1,7 @@
 package ru.netology.mapsya.activity
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -7,14 +9,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.activityViewModels
 import com.yandex.mapkit.Animation
 import com.yandex.mapkit.MapKit
-import com.yandex.mapkit.MapKitFactory
 import com.yandex.mapkit.ScreenPoint
 import com.yandex.mapkit.ScreenRect
 import com.yandex.mapkit.geometry.Point
 import com.yandex.mapkit.layers.GeoObjectTapListener
+import com.yandex.mapkit.layers.ObjectEvent
 import com.yandex.mapkit.map.CameraPosition
 import com.yandex.mapkit.map.GeoObjectSelectionMetadata
 import com.yandex.mapkit.map.InputListener
@@ -24,20 +27,28 @@ import com.yandex.mapkit.map.MapWindow
 import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.map.SizeChangedListener
 import com.yandex.mapkit.mapview.MapView
+import com.yandex.mapkit.user_location.UserLocationLayer
+import com.yandex.mapkit.user_location.UserLocationObjectListener
+import com.yandex.mapkit.user_location.UserLocationView
 import com.yandex.runtime.image.ImageProvider
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.mapsya.R
 import ru.netology.mapsya.databinding.FragmentMapsBinding
 import ru.netology.mapsya.dto.DataMapObject
 import ru.netology.mapsya.viewmodel.MainViewModel
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MapsFragment : Fragment() {
+
+    @Inject
+     lateinit var mapKitN: MapKit
 
     private lateinit var binding: FragmentMapsBinding
     private lateinit var mapWindow: MapWindow
     private lateinit var map: Map
     private lateinit var mapView: MapView
+    private lateinit var userLocation: UserLocationLayer
 
     private lateinit var imageProvider: ImageProvider
 
@@ -46,6 +57,19 @@ class MapsFragment : Fragment() {
     private val sizeChangedListener = SizeChangedListener { _, _, _ ->
         // Recalculate FocusRect and FocusPoint on every map's size change
         updateFocusInfo()
+    }
+
+    private val locationObjectListener = object : UserLocationObjectListener {
+        override fun onObjectAdded(view: UserLocationView) = Unit
+
+        override fun onObjectRemoved(view: UserLocationView) = Unit
+
+        override fun onObjectUpdated(view: UserLocationView, event: ObjectEvent) {
+            userLocation.cameraPosition()?.target?.let {
+                mapView?.map?.move(CameraPosition(it, 15F, 0F, 0F), START_ANIMATION, null)
+            }
+            userLocation.setObjectListener(null)
+        }
     }
 
     // удаление метки
@@ -143,11 +167,41 @@ class MapsFragment : Fragment() {
         true
     }
 
+    private val permissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            when {
+                granted -> {
+                    userLocation.isVisible = true
+                    userLocation.isHeadingEnabled = false
+                    userLocation.cameraPosition()?.target?.also {
+                        val map = mapView?.map ?: return@registerForActivityResult
+                        val cameraPosition = map.cameraPosition
+                        map.move(
+                            CameraPosition(
+                                it,
+                              //  15f,
+                                cameraPosition.zoom,
+                                cameraPosition.azimuth,
+                                cameraPosition.tilt,
+                            )
+                        )
+                    }
+                }
+                else -> {
+                    Toast.makeText(
+                        requireContext(),
+                        "Необходимо разрешение",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        MapKitFactory.initialize(context)
+   //     MapKitFactory.initialize(context)
 
         binding = FragmentMapsBinding.inflate(layoutInflater, container, false)
 
@@ -157,8 +211,7 @@ class MapsFragment : Fragment() {
         mapWindow = mapView.mapWindow
         map = mapWindow.map
 
-        val mapKit: MapKit = MapKitFactory.getInstance()
-        val trafficJam = mapKit.createTrafficLayer(mapWindow)
+        val trafficJam = mapKitN.createTrafficLayer(mapWindow)
         trafficJam.isTrafficVisible = true
 
         mapWindow.addSizeChangedListener(sizeChangedListener)
@@ -167,27 +220,43 @@ class MapsFragment : Fragment() {
         map.addInputListener(inputListener)
         map.addTapListener(geoObjectTapListener)
 
-        map.move(START_POSITION, START_ANIMATION, null)
+        userLocation = mapKitN.createUserLocationLayer(mapWindow)
+        if (requireActivity()
+                .checkSelfPermission(
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            userLocation.isVisible = true
+            userLocation.isHeadingEnabled = false
+
+        }
+
+        //map.move(START_POSITION, START_ANIMATION, null)
 
         binding.apply {
             // Changing camera's zoom by controls on the map
             buttonMinus.setOnClickListener { changeZoomByStep(-ZOOM_STEP) }
             buttonPlus.setOnClickListener { changeZoomByStep(ZOOM_STEP) }
+            location.setOnClickListener {
+                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
         }
 
         viewModel.currentFavoriteMapObject.observe(viewLifecycleOwner) {
-            it?.let {
+            if(it!=null) {
                 createMapObject(it)
                 map.move(
                     CameraPosition(
                         Point(it.latitude, it.longitude),
-                        /* zoom = */ 10.0f,
+                        /* zoom = */ 15.0f,
                         /* azimuth = */ 0.0f,
                         /* tilt = */ 0.0f,
                     ),
-                START_ANIMATION,
+                    START_ANIMATION,
                     null
                 )
+            } else {
+                userLocation.setObjectListener(locationObjectListener)
             }
         }
 
@@ -209,7 +278,7 @@ class MapsFragment : Fragment() {
                         map.move(
                             CameraPosition(
                                 Point(aveLat, aveLong),
-                                /* zoom = */ 10.0f,
+                                /* zoom = */ 13.0f,
                                 /* azimuth = */ 0.0f,
                                 /* tilt = */ 0.0f,
                             ),
@@ -229,13 +298,15 @@ class MapsFragment : Fragment() {
 
     override fun onStart() {
         super.onStart()
-        MapKitFactory.getInstance().onStart()
+        mapKitN.onStart()
+     //   MapKitFactory.getInstance().onStart()
         mapView.onStart()
     }
 
     override fun onStop() {
         mapView.onStop()
-        MapKitFactory.getInstance().onStop()
+        mapKitN.onStop()
+      //  MapKitFactory.getInstance().onStop()
         super.onStop()
     }
 
