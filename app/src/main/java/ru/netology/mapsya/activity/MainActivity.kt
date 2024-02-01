@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.navigation.findNavController
+import androidx.navigation.ui.setupWithNavController
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.mapsya.R
 import ru.netology.mapsya.databinding.ActivityMainBinding
@@ -28,7 +29,6 @@ class MainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.mapsFragment -> {
                     viewModel.currentFavoriteMapObject.value = null
-                    viewModel.pointBottomMenu.value = 0
                     findNavController(R.id.nav_host_fragment)
                         .navigate(R.id.mapsFragment)
                 }
@@ -41,9 +41,6 @@ class MainActivity : AppCompatActivity() {
             }
             true
         }
-
-        viewModel.pointBottomMenu.observe(this) {
-            binding.bottomMenu.menu.getItem(it).isChecked = true
-        }
+        binding.bottomMenu.setupWithNavController(findNavController(R.id.nav_host_fragment))
     }
 }

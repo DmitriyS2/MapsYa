@@ -25,9 +25,6 @@ class MainViewModel @Inject constructor(
 
     var flagShowAll: MutableLiveData<Boolean> = MutableLiveData<Boolean>(false)
 
-    val pointBottomMenu:MutableLiveData<Int> = MutableLiveData(0)
-
-
     init {
         getAll()
         flagShowAll.value = false

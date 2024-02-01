@@ -42,7 +42,6 @@ class FavoriteFragment : Fragment() {
 
             override fun goToMapObject(dataMapObject: DataMapObject) {
                 viewModel.goToPoint(dataMapObject)
-                viewModel.pointBottomMenu.value = 0
                 findNavController()
                     .navigate(R.id.mapsFragment)
             }
