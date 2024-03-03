@@ -7,12 +7,12 @@ import ru.netology.mapsya.dto.DataMapObject
 @Entity
 data class DataMapObjectEntity(
     @PrimaryKey(autoGenerate = true)
-    val id:Long,
-    val longitude:Double,
-    val latitude:Double,
-    var description:String
+    val id: Long,
+    val longitude: Double,
+    val latitude: Double,
+    var description: String
 ) {
-    fun toDto() = DataMapObject(id, longitude, latitude,description)
+    fun toDto() = DataMapObject(id, longitude, latitude, description)
 
     companion object {
         fun fromDto(dto: DataMapObject) =
@@ -22,4 +22,3 @@ data class DataMapObjectEntity(
 }
 
 fun List<DataMapObjectEntity>.toDto(): List<DataMapObject> = map(DataMapObjectEntity::toDto)
-fun List<DataMapObject>.toEntity(): List<DataMapObjectEntity> = map(DataMapObjectEntity::fromDto)

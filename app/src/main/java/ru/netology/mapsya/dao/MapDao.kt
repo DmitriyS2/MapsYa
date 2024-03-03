@@ -26,7 +26,7 @@ interface MapDao {
                 description = :description                            
                 WHERE id = :id"""
     )
-    suspend fun updateDescriptionById(id: Long, description:String)
+    suspend fun updateDescriptionById(id: Long, description: String)
 
     @Query("DELETE FROM DataMapObjectEntity")
     suspend fun removeAll()

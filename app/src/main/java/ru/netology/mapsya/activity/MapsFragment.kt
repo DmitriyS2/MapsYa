@@ -24,7 +24,6 @@ import com.yandex.mapkit.map.InputListener
 import com.yandex.mapkit.map.Map
 import com.yandex.mapkit.map.MapObjectTapListener
 import com.yandex.mapkit.map.MapWindow
-import com.yandex.mapkit.map.PlacemarkMapObject
 import com.yandex.mapkit.map.SizeChangedListener
 import com.yandex.mapkit.mapview.MapView
 import com.yandex.mapkit.user_location.UserLocationLayer
@@ -42,9 +41,10 @@ import javax.inject.Inject
 class MapsFragment : Fragment() {
 
     @Inject
-     lateinit var mapKitN: MapKit
+    lateinit var mapKitN: MapKit
 
     private lateinit var binding: FragmentMapsBinding
+
     private lateinit var mapWindow: MapWindow
     private lateinit var map: Map
     private lateinit var mapView: MapView
@@ -66,7 +66,7 @@ class MapsFragment : Fragment() {
 
         override fun onObjectUpdated(view: UserLocationView, event: ObjectEvent) {
             userLocation.cameraPosition()?.target?.let {
-                mapView?.map?.move(CameraPosition(it, 15F, 0F, 0F), START_ANIMATION, null)
+                mapView.map?.move(CameraPosition(it, 15F, 0F, 0F), START_ANIMATION, null)
             }
             userLocation.setObjectListener(null)
         }
@@ -81,7 +81,6 @@ class MapsFragment : Fragment() {
             "Удалена метка (${point.longitude}, ${point.latitude})",
             Toast.LENGTH_SHORT
         ).show()
-        Log.d("MyLog", "удаление метки MapsFragment id=${mapObject.userData as Long}")
         viewModel.removeMapObject(mapObject.userData as Long)
         true
     }
@@ -105,7 +104,6 @@ class MapsFragment : Fragment() {
                         geometry = Point(point.latitude, point.longitude)
                         setIcon(imageProvider)
                         setText(binding.inputDescriptionPoint.text.toString())
-                        Log.d("MyLog", "inputListener доб метку counter=${viewModel.counter}")
                         userData = viewModel.counter
                     }
                     placemark.addTapListener(placemarkTapListener)
@@ -161,7 +159,6 @@ class MapsFragment : Fragment() {
         Toast.makeText(
             activity,
             if (it.geoObject.name != null) "${it.geoObject.name}" else "Нет данных об объекте",
-            //  "Tapped ${it.geoObject.name} id = ${selectionMetadata.objectId}",
             Toast.LENGTH_SHORT
         ).show()
         true
@@ -174,12 +171,11 @@ class MapsFragment : Fragment() {
                     userLocation.isVisible = true
                     userLocation.isHeadingEnabled = false
                     userLocation.cameraPosition()?.target?.also {
-                        val map = mapView?.map ?: return@registerForActivityResult
+                        val map = mapView.map ?: return@registerForActivityResult
                         val cameraPosition = map.cameraPosition
                         map.move(
                             CameraPosition(
                                 it,
-                              //  15f,
                                 cameraPosition.zoom,
                                 cameraPosition.azimuth,
                                 cameraPosition.tilt,
@@ -187,6 +183,7 @@ class MapsFragment : Fragment() {
                         )
                     }
                 }
+
                 else -> {
                     Toast.makeText(
                         requireContext(),
@@ -201,7 +198,6 @@ class MapsFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-   //     MapKitFactory.initialize(context)
 
         binding = FragmentMapsBinding.inflate(layoutInflater, container, false)
 
@@ -231,19 +227,19 @@ class MapsFragment : Fragment() {
 
         }
 
-        //map.move(START_POSITION, START_ANIMATION, null)
-
         binding.apply {
             // Changing camera's zoom by controls on the map
             buttonMinus.setOnClickListener { changeZoomByStep(-ZOOM_STEP) }
+
             buttonPlus.setOnClickListener { changeZoomByStep(ZOOM_STEP) }
+
             location.setOnClickListener {
                 permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
 
         viewModel.currentFavoriteMapObject.observe(viewLifecycleOwner) {
-            if(it!=null) {
+            if (it != null) {
                 createMapObject(it)
                 map.move(
                     CameraPosition(
@@ -261,19 +257,19 @@ class MapsFragment : Fragment() {
         }
 
         viewModel.flagShowAll.observe(viewLifecycleOwner) {
-            if(it) {
+            if (it) {
                 var aveLong = 0.0
                 var aveLat = 0.0
 
                 viewModel.allFavoriteMapObject.value?.onEach { dataMapObject ->
                     createMapObject(dataMapObject)
-                    aveLong +=dataMapObject.longitude
-                    aveLat +=dataMapObject.latitude
+                    aveLong += dataMapObject.longitude
+                    aveLat += dataMapObject.latitude
                 }
 
-                if(aveLat>0.0) {
+                if (aveLat > 0.0) {
                     viewModel.allFavoriteMapObject.value?.let { list ->
-                        aveLong /=list.size
+                        aveLong /= list.size
                         aveLat /= list.size
                         map.move(
                             CameraPosition(
@@ -299,14 +295,12 @@ class MapsFragment : Fragment() {
     override fun onStart() {
         super.onStart()
         mapKitN.onStart()
-     //   MapKitFactory.getInstance().onStart()
         mapView.onStart()
     }
 
     override fun onStop() {
         mapView.onStop()
         mapKitN.onStop()
-      //  MapKitFactory.getInstance().onStop()
         super.onStop()
     }
 
@@ -322,7 +316,7 @@ class MapsFragment : Fragment() {
 
     private fun updateFocusInfo() {
         val defaultPadding = resources.getDimension(R.dimen.default_focus_rect_padding)
-     //   val bottomPadding = binding.layoutBottomCard.measuredHeight
+        //   val bottomPadding = binding.layoutBottomCard.measuredHeight
         val rightPadding = binding.buttonMinus.measuredWidth
         val bottomEditPadding = binding.textZoom.measuredHeight
         // Focus rect consider a bottom card UI and map zoom controls.
@@ -330,7 +324,7 @@ class MapsFragment : Fragment() {
             ScreenPoint(defaultPadding, defaultPadding),
             ScreenPoint(
                 mapWindow.width() - rightPadding - defaultPadding,
-                mapWindow.height()  - defaultPadding - bottomEditPadding,
+                mapWindow.height() - defaultPadding - bottomEditPadding,
             )
         )
         mapWindow.focusPoint = ScreenPoint(

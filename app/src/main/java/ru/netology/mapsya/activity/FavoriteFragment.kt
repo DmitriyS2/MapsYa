@@ -1,7 +1,6 @@
 package ru.netology.mapsya.activity
 
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -21,15 +20,12 @@ import ru.netology.mapsya.viewmodel.MainViewModel
 @AndroidEntryPoint
 class FavoriteFragment : Fragment() {
 
-    lateinit var binding: FragmentFavoriteBinding
-
     private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-
 
         val adapter = MapObjectAdapter(object : Listener {
             override fun deleteMapObject(id: Long) {
@@ -47,13 +43,13 @@ class FavoriteFragment : Fragment() {
             }
         })
 
-        binding = FragmentFavoriteBinding.inflate(layoutInflater, container, false)
+        val binding = FragmentFavoriteBinding.inflate(layoutInflater, container, false)
 
         binding.rwFavorite.layoutManager = LinearLayoutManager(activity)
         binding.rwFavorite.adapter = adapter
 
         viewModel.allFavoriteMapObject.observe(viewLifecycleOwner) {
-            Log.d("MyLog", "observe it=$it")
+            viewModel.currentFavoriteMapObject.value = null
             adapter.mapObjectList = it
             adapter.submitList(it)
             binding.buttonShowAllFavorite.isEnabled = !it.isNullOrEmpty()
@@ -67,7 +63,7 @@ class FavoriteFragment : Fragment() {
         binding.buttonShowAllFavorite.setOnClickListener {
             viewModel.showAll()
             findNavController()
-                .navigate(R.id.mapsFragment)
+                .navigate(R.id.action_favoriteFragment_to_mapsFragment)
         }
 
         return binding.root

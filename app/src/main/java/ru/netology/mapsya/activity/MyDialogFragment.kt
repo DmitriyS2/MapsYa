@@ -11,12 +11,10 @@ import ru.netology.mapsya.viewmodel.MainViewModel
 
 class MyDialogFragment : DialogFragment() {
 
-    lateinit var binding: FragmentMyDialogBinding
-
     private val viewModel: MainViewModel by activityViewModels()
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        binding = FragmentMyDialogBinding.inflate(layoutInflater)
+        val binding = FragmentMyDialogBinding.inflate(layoutInflater)
         val builder = AlertDialog.Builder(requireContext())
 
         return builder
@@ -26,9 +24,9 @@ class MyDialogFragment : DialogFragment() {
             .setCancelable(true)
             .setPositiveButton("Удалить") { _, _ ->
                 dialog?.cancel()
-               viewModel.removeAll()
+                viewModel.removeAll()
             }
-            .setNegativeButton("Отмена") {_, _ ->
+            .setNegativeButton("Отмена") { _, _ ->
                 dialog?.cancel()
             }
             .create()

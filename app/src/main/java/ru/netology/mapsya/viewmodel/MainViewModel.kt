@@ -1,6 +1,5 @@
 package ru.netology.mapsya.viewmodel
 
-import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -30,24 +29,36 @@ class MainViewModel @Inject constructor(
         flagShowAll.value = false
     }
 
-    fun getAll() {
+    private fun getAll() {
         viewModelScope.launch {
-            allFavoriteMapObject.value = repository.getAll()
-            counter = repository.getMaxId() ?: 0L
+            try {
+                allFavoriteMapObject.value = repository.getAll()
+                counter = repository.getMaxId() ?: 0L
+            } catch (e:Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     fun addMapObject(dataMapObject: DataMapObject) {
         viewModelScope.launch {
-            repository.addMapObject(dataMapObject)
-            allFavoriteMapObject.value = repository.getAll()
-            counter = repository.getMaxId() ?: 0L
+            try {
+                repository.addMapObject(dataMapObject)
+                allFavoriteMapObject.value = repository.getAll()
+                counter = repository.getMaxId() ?: 0L
+            } catch (e:Exception) {
+                e.printStackTrace()
+            }
         }
     }
 
     fun removeMapObject(id: Long) {
         viewModelScope.launch {
-            repository.removeMapObject(id)
+            try{
+                repository.removeMapObject(id)
+            } catch (e:Exception) {
+                e.printStackTrace()
+            }
         }
         allFavoriteMapObject.value = allFavoriteMapObject.value?.let {
             it.filter { mapObject ->
@@ -58,7 +69,12 @@ class MainViewModel @Inject constructor(
 
     fun editMapObject(dataMapObject: DataMapObject, newDescription: String) {
         viewModelScope.launch {
-            repository.editMapObject(dataMapObject, newDescription)
+            try{
+                repository.editMapObject(dataMapObject, newDescription)
+            } catch (e:Exception) {
+                e.printStackTrace()
+            }
+
         }
 
         allFavoriteMapObject.value = allFavoriteMapObject.value?.let {
@@ -70,7 +86,6 @@ class MainViewModel @Inject constructor(
                 }
             }
         }
-        Log.d("MyLog", "editMapObject MainViewModel $allFavoriteMapObject")
     }
 
     fun goToPoint(dataMapObject: DataMapObject) {
@@ -84,8 +99,13 @@ class MainViewModel @Inject constructor(
 
     fun removeAll() {
         viewModelScope.launch {
-            repository.clearAllFavorite()
-            getAll()
+            try{
+                repository.clearAllFavorite()
+                getAll()
+            } catch (e:Exception) {
+                e.printStackTrace()
+            }
+
         }
     }
 

@@ -26,15 +26,19 @@ class MapObjectAdapter(private val listener: Listener) :
 
     class MapObjectHolder(item: View, private val listener: Listener) :
         RecyclerView.ViewHolder(item) {
-        val binding = ItemDataMapObjectBinding.bind(item)
+        private val binding = ItemDataMapObjectBinding.bind(item)
+
+        private lateinit var dataMapObj: DataMapObject
 
         fun bind(payload: Payload) {
             payload.description?.let {
                 binding.descPoint.text = it
+                dataMapObj = dataMapObj.copy(description = it)
             }
         }
 
         fun bind(dataMapObject: DataMapObject) = with(binding) {
+            dataMapObj = dataMapObject
             descPoint.text = dataMapObject.description
             longitudePoint.text = dataMapObject.longitude.toString()
             latitudePoint.text = dataMapObject.latitude.toString()
@@ -46,6 +50,7 @@ class MapObjectAdapter(private val listener: Listener) :
                     PropertyValuesHolder.ofFloat(View.SCALE_X, 1.0F, 1.2F, 1.0F),
                     PropertyValuesHolder.ofFloat(View.SCALE_Y, 1.0F, 1.2F, 1.0F)
                 ).start()
+                editDescPoint.setText(dataMapObject.description)
                 groupEditDescription.visibility = View.VISIBLE
             }
 
@@ -68,7 +73,7 @@ class MapObjectAdapter(private val listener: Listener) :
             }
 
             cardViewFavorite.setOnClickListener {
-                listener.goToMapObject(dataMapObject)
+                listener.goToMapObject(dataMapObj)
             }
         }
     }
@@ -111,8 +116,7 @@ class MapObjectDiffCallback : DiffUtil.ItemCallback<DataMapObject>() {
     }
 
     override fun areContentsTheSame(oldItem: DataMapObject, newItem: DataMapObject): Boolean {
-        return oldItem==newItem
-     //   return (oldItem.description == newItem.description)
+        return oldItem == newItem
     }
 
     override fun getChangePayload(oldItem: DataMapObject, newItem: DataMapObject): Any =

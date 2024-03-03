@@ -9,26 +9,21 @@ import javax.inject.Singleton
 
 @Singleton
 class RepositoryImpl @Inject constructor(
-private val mapDao: MapDao
-):Repository {
+    private val mapDao: MapDao
+) : Repository {
 
     override suspend fun getAll() = mapDao.getAll().toDto()
 
     override suspend fun getMaxId(): Long? = mapDao.getMaxId()
 
-    override suspend fun addMapObject(dataMapObject: DataMapObject) {
+    override suspend fun addMapObject(dataMapObject: DataMapObject) =
         mapDao.insert(DataMapObjectEntity.fromDto(dataMapObject))
-    }
 
-    override suspend fun removeMapObject(id:Long) {
-        mapDao.removeById(id)
-    }
+    override suspend fun removeMapObject(id: Long) = mapDao.removeById(id)
 
-    override suspend fun editMapObject(dataMapObject: DataMapObject, newDescription:String) {
+    override suspend fun editMapObject(dataMapObject: DataMapObject, newDescription: String) =
         mapDao.updateDescriptionById(dataMapObject.id, newDescription)
-    }
 
-    override suspend fun clearAllFavorite() {
-        mapDao.removeAll()
-    }
+    override suspend fun clearAllFavorite() = mapDao.removeAll()
+
 }
